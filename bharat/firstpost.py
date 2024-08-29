@@ -153,7 +153,7 @@ def fetch_news(NEWS_URL):
             "src": NEWS_URL,
         }
 
-        logging.info(f"Fetched news article: {news_title}")
+        logging.info(f"Fetched news: {NEWS_URL}")
         return news_dict
     except Exception as e:
         logging.error(f"Error fetching news from {NEWS_URL}: {e}")
