@@ -26,11 +26,11 @@ BHARAT_URL = "https://www.firstpost.com/category/india"
 
 firebase_credentials = {
     "type": "service_account",
-    "project_id": "histral",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "universe_domain": "googleapis.com",
+    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
     "client_id": os.getenv("FIREBASE_CLIENT_ID"),
     "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
     "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
