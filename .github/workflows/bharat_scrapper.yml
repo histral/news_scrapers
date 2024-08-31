@@ -1,0 +1,52 @@
+name: Scrape News for Bharat
+
+on:
+  schedule:
+    - cron: "45 14 * * *" # Triggers daily at 8:15 PM IST
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  run-news-summary:
+    runs-on: ubuntu-latest
+
+    env:  
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_CLIENT_ID: ${{ secrets.FIREBASE_CLIENT_ID }}
+      FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+      FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
+      FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+      FIREBASE_CLIENT_X509_CERT_URL: ${{ secrets.FIREBASE_CLIENT_X509_CERT_URL }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download NLTK Resources
+      run: |
+        python -m nltk.downloader punkt punkt_tab stopwords
+
+    - name: Scrape News from FirstPost
+      run: |
+        python bharat/firstpost.py
+
+    - name: Scrape News from The Hindu
+      run: |
+        python bharat/hindu.py
+
+    - name: Scrape News from NDTV
+      run: |
+        python bharat/ndtv.py
+
+    - name: Confirm Completion
+      run: |
+        echo "News scraping completed successfully!"
