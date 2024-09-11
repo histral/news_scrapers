@@ -21,8 +21,8 @@ logging.basicConfig(
 
 # --------------------- Constants ---------------------
 
-BASE_URL = "https://www.firstpost.com"
-BHARAT_URL = "https://www.firstpost.com/category/india"
+BASE_URL = "https://www.firstpost.com/"
+CRICKET_URL = "https://www.firstpost.com/firstcricket/"
 
 firebase_credentials = {
     "type": "service_account",
@@ -50,44 +50,39 @@ except Exception as e:
 # --------------------- Common Functions ---------------------
 
 
-def parse_date_to_iso(date_str):
+def parse_time_to_iso(time):
     try:
-        # Adjust the format string to match 'September 13, 2024,12:52:19'
-        date_object = datetime.strptime(date_str.strip(), "%B %d, %Y,%H:%M:%S")
+        date_object = datetime.strptime(time, "%B %d, %Y, %H:%M:%S %Z")
         return date_object.isoformat()
-    except ValueError as e:
-        logging.error(f"Failed to parse time '{date_str}' to ISO: {e}")
+    except Exception as e:
+        logging.error(f"Error parsing time '{time}': {e}")
         return None
 
 
 def fetch_soup(URL):
     try:
-        base_page_data = requests.get(URL, timeout=10)
-        base_page_data.raise_for_status()  # raises HTTPError for bad responses
+        base_page_data = requests.get(URL)
         base_soup = BeautifulSoup(base_page_data.content, "html.parser")
         return base_soup
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Failed to fetch URL {URL}: {e}")
+    except Exception as e:
+        logging.error(f"Error fetching soup from {URL}: {e}")
         return None
 
 
 def fetch_all_news_links():
-    try:
-        news_links = []
-        base_soup = fetch_soup(BHARAT_URL)
-        if not base_soup:
-            return news_links
+    news_links = []
+    base_soup = fetch_soup(CRICKET_URL)
 
-        news_anchors = base_soup.find_all("a", class_=["en-nw-list", "en-nw"])
-        for a_tag in news_anchors:
-            if a_tag and a_tag["href"]:
-                news_links.append(a_tag["href"])
-
-        logging.info(f"Found {len(news_links)} news links")
-        return news_links
-    except Exception as e:
-        logging.error(f"Error fetching news links: {e}")
+    if not base_soup:
         return []
+
+    news_anchors = base_soup.find_all("a", class_=["en-nw-list", "en-nw"])
+
+    for a_tag in news_anchors:
+        if a_tag and a_tag["href"]:
+            news_links.append(a_tag["href"])
+
+    return news_links
 
 
 def fetch_news(NEWS_URL):
@@ -103,30 +98,22 @@ def fetch_news(NEWS_URL):
         art_details_info = news_soup.find("div", class_="art-dtls-info")
         if art_details_info:
             details_text = art_details_info.text.split("•")
-            news_date = details_text[-1].strip() if len(details_text) > 1 else ""
-            news_author = details_text[0].strip() if details_text[0].strip() else ""
+            news_date = (
+                details_text[-1].strip() if len(details_text) > 1 else "Date not found"
+            )
+            news_author = (
+                details_text[0].strip()
+                if details_text[0].strip()
+                else "Author not found"
+            )
         else:
-            news_date, news_author = "", ""
-
-        if len(news_date) == 0:
-            logging.error(f"Error: Date not found for {NEWS_URL}")
-            return None
-
-        times_list = news_date.split(",")
-
-        # Check if the last part contains "IST" and remove it
-        if "IST" in times_list[-1]:
-            times_list[-1] = times_list[-1].replace("IST", "").strip()
-
-        # Join the list back into a string
-        news_date = ",".join(times_list)
+            news_date, news_author = "Date not found", "Author not found"
 
         sub_heading_element = news_soup.find("div", class_="art-desc")
-        sub_heading_p = sub_heading_element.find("p") if sub_heading_element else None
         news_sub_heading = (
-            sub_heading_p.find("span").text
-            if sub_heading_p
-            else "Sub Heading not found"
+            sub_heading_element.find("p").find("span").text
+            if sub_heading_element and sub_heading_element.find("p")
+            else "Sub-heading not found"
         )
 
         news_body_p_list = (
@@ -145,16 +132,16 @@ def fetch_news(NEWS_URL):
 
         news_dict = {
             "title": news_title,
-            "timestamp": parse_date_to_iso(news_date),
-            "author": [news_author],
+            "timestamp": parse_time_to_iso(news_date),
+            "author": news_author,
             "sub_heading": news_sub_heading,
             "body": news_body,
             "tags": news_tags,
             "src": NEWS_URL,
         }
 
-        logging.info(f"Fetched news: {NEWS_URL}")
         return news_dict
+
     except Exception as e:
         logging.error(f"Error fetching news from {NEWS_URL}: {e}")
         return None
@@ -163,7 +150,6 @@ def fetch_news(NEWS_URL):
 def filter_news_data(DATA):
     filtered_list = []
     ist = pytz.timezone("Asia/Kolkata")
-
     current_time_ist = datetime.now(ist)
 
     yesterday_8pm = current_time_ist.replace(
@@ -172,23 +158,22 @@ def filter_news_data(DATA):
     today_8pm = current_time_ist.replace(hour=20, minute=0, second=0, microsecond=0)
 
     for item in DATA:
-
-        if item is None:
+        iso_time = item.get("timestamp")
+        if not iso_time:
+            logging.warning(
+                f"Skipping article due to missing or invalid timestamp: {item}"
+            )
             continue
-
-        iso_time = item["timestamp"]
 
         try:
             date_obj = datetime.fromisoformat(iso_time)
             date_timezone = date_obj.astimezone(ist)
+
             if yesterday_8pm <= date_timezone <= today_8pm:
                 filtered_list.append(item)
-        except ValueError:
-            logging.warning(f"Skipping invalid date format: {iso_time}")
+        except ValueError as e:
+            logging.error(f"Error processing date '{iso_time}': {e}")
 
-    logging.info(
-        f"Filtered {len(filtered_list)} articles between yesterday 8PM and today 8PM"
-    )
     return filtered_list
 
 
@@ -226,8 +211,9 @@ def upload_summarized_articles(DATA):
         ist = pytz.timezone("Asia/Kolkata")
         current_date_ist = datetime.now(ist).date()
         doc_id = f"{current_date_ist.day}-{current_date_ist.month}-{current_date_ist.year}_bharat"
-        doc_ref = DB.collection("bharat").document(doc_id)
+        doc_ref = DB.collection("cricket").document(doc_id)
         data = {"fp": DATA}
+
         try:
             doc_ref.update(data)
         except:
@@ -238,6 +224,7 @@ def upload_summarized_articles(DATA):
 
 
 # --------------------- Main Execution ---------------------
+
 
 try:
     news_links = fetch_all_news_links()
@@ -252,7 +239,7 @@ try:
     filtered_news_data = filter_news_data(news_data)
 
     summarized_news = []
-
+    
     for news in filtered_news_data:
 
         if news is None:
