@@ -239,7 +239,7 @@ try:
     filtered_news_data = filter_news_data(news_data)
 
     summarized_news = []
-    
+
     for news in filtered_news_data:
 
         if news is None:
