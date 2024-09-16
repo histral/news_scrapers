@@ -55,7 +55,7 @@ def _get_firestore_db():
 
         return database
     except Exception as e:
-        Logger.error(f"ERROR: initializing Firebase: {e}")
+        Logger.error(f"ERROR: Initializing Firebase: {e}")
         raise
 
 
