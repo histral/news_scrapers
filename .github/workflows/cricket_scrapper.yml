@@ -1,13 +1,13 @@
-name: Scrape News for USA
+name: Scrape News for Cricket
 
 on:
   workflow_dispatch: 
   schedule:
-    # Triggers daily at 8:21 PM IST
-    - cron: "51 14 * * *" 
+    # Triggers daily at 8:19 PM IST
+    - cron: "49 14 * * *" 
 
 jobs:
-  scrape-news-for-usa:
+  scrape-news-for-cricket:
     runs-on: ubuntu-latest
 
     env:  
@@ -38,11 +38,11 @@ jobs:
 
     - name: Scrape News from FirstPost
       run: |
-        python -m firstpost.usa
+        python -m firstpost.cricket
 
     - name: Scrape News from NDTV
       run: |
-        python -m ndtv.usa
+        python -m ndtv.cricket
 
     - name: Confirm Completion
       run: |
