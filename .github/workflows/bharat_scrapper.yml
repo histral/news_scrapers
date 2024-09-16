@@ -1,12 +1,13 @@
 name: Scrape News for Bharat
 
 on:
+  workflow_dispatch: 
   schedule:
-    - cron: "45 14 * * *" # Triggers daily at 8:15 PM IST
-  workflow_dispatch: # Allows manual triggering
+    # Triggers daily at 8:15 PM IST
+    - cron: "45 14 * * *" 
 
 jobs:
-  run-news-summary:
+  scrape-news-for-bharat:
     runs-on: ubuntu-latest
 
     env:  
@@ -37,15 +38,15 @@ jobs:
 
     - name: Scrape News from FirstPost
       run: |
-        python bharat/firstpost.py
+        python -m firstpost.bharat
 
     - name: Scrape News from The Hindu
       run: |
-        python bharat/hindu.py
+        python -m hindu.bharat
 
     - name: Scrape News from NDTV
       run: |
-        python bharat/ndtv.py
+        python -m ndtv.bharat
 
     - name: Confirm Completion
       run: |
