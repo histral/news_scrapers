@@ -175,7 +175,7 @@ try:
         news_dict = {
             "title": heading,
             "timestamp": timestamp,
-            "author": author,
+            "author": [author],
             "sub_heading": summarized_sub_heading,
             "body": summarized_body,
             "tags": [],

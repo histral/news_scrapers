@@ -133,7 +133,7 @@ def fetch_news(NEWS_URL):
         news_dict = {
             "title": news_title,
             "timestamp": parse_time_to_iso(news_date),
-            "author": news_author,
+            "author": [news_author],
             "sub_heading": news_sub_heading,
             "body": news_body,
             "tags": news_tags,
