@@ -77,9 +77,22 @@ try:
 
     for div in news_divs:
         link = div.find("a", class_="lst-pg_ttl")
+        date_span = div.find("span", class_="lst-a_pst_lnk")
 
-        if link and link.get("href"):
-            news_links.append(link["href"])
+        if date_span == None or link == None:
+            Logger.warning(f"No date found in {link}")
+            continue
+
+        try:
+            news_date = parse_date_to_iso(date_span.text)
+            date_obj = datetime.fromisoformat(news_date)
+            date_timezone = date_obj.astimezone(IST)
+
+            if YESTERDAY_8PM <= date_timezone <= TODAY_8PM:
+                if link and link.get("href"):
+                    news_links.append(link["href"])
+        except ValueError:
+            Logger.warning(f"WARN: Skipping invalid date format: {date_span.text}")
 
     Logger.info(f"INFO: Fetched {len(news_links)} news links")
 

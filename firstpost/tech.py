@@ -21,8 +21,8 @@ Logger.basicConfig(
 
 # --------------------- Constants ---------------------
 
-BASE_URL = "https://www.firstpost.com"
-BHARAT_URL = "https://www.firstpost.com/category/india"
+BASE_URL = "https://www.firstpost.com/"
+TECH_URL = "https://www.firstpost.com/tech/news-analysis/"
 
 IST = pytz.timezone("Asia/Kolkata")
 
@@ -203,7 +203,7 @@ def filter_news_data(DATA: list) -> list:
 
 
 try:
-    news_links = fetch_all_news_links(BHARAT_URL)
+    news_links = fetch_all_news_links(TECH_URL)
     news_data = []
 
     for link in news_links:
@@ -217,7 +217,7 @@ try:
     post_news(
         DATA=filtered_news_data,
         current_date=CURRENT_TIME_IST.date(),
-        category=Category.BHARAT,
+        category=Category.TECHNOLOGY,
         outlet_code=OutletCode.FP,
     )
 
