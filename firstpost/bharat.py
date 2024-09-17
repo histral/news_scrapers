@@ -46,10 +46,10 @@ YESTERDAY_8PM = CURRENT_TIME_IST.replace(
 
 def parse_date_to_iso(date_str: str) -> str:
     """
-    Adjust the format string to match 'September 13, 2024,12:52:19'
+    Adjust the format string to match 'September 13, 2024,12:52:19 IST'
     """
     try:
-        date_object = datetime.strptime(date_str.strip(), "%B %d, %Y, %H:%M:%S")
+        date_object = datetime.strptime(date_str.strip(), "%B %d, %Y, %H:%M:%S %Z")
         return date_object.isoformat()
     except ValueError as e:
         Logger.error(f"ERROR: Failed to parse time '{date_str}' to ISO: {e}")
@@ -119,9 +119,6 @@ def fetch_news(URL) -> NewsArticle | None:
         if len(news_date) == 0:
             Logger.error(f"Error: News date not found for {URL}")
             return None
-
-        # Check if [news_date] contains "IST" and remove it
-        news_date = news_date.replace("IST", "").strip()
 
         # Format news date in ISO format
         news_date = parse_date_to_iso(news_date)
