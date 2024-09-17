@@ -46,10 +46,13 @@ YESTERDAY_8PM = CURRENT_TIME_IST.replace(
 
 def parse_date_to_iso(date_str: str) -> str:
     """
-    Adjust the format string to match 'September 13, 2024,12:52:19 IST'
+    Adjust the format string to match 'September 13, 2024,12:52:19'
     """
     try:
-        date_object = datetime.strptime(date_str.strip(), "%B %d, %Y, %H:%M:%S %Z")
+        # Check if [date_str] contains "IST" and remove it
+        date_str = date_str.replace("IST", "").strip()
+
+        date_object = datetime.strptime(date_str.strip(), "%B %d, %Y, %H:%M:%S")
         return date_object.isoformat()
     except ValueError as e:
         Logger.error(f"ERROR: Failed to parse time '{date_str}' to ISO: {e}")
@@ -117,11 +120,15 @@ def fetch_news(URL) -> NewsArticle | None:
             news_date, news_author = "", ""
 
         if len(news_date) == 0:
-            Logger.error(f"Error: News date not found for {URL}")
+            Logger.warning(f"WARN: News Date not found for {URL}")
             return None
 
         # Format news date in ISO format
         news_date = parse_date_to_iso(news_date)
+
+        if news_date == None:
+            Logger.warning(f"WARN: Unable to parse News Date for {URL}")
+            return None
 
         news_body_p_list = (
             news_soup.find("div", class_="art-content").find_all("p")

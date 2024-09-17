@@ -54,10 +54,13 @@ YESTERDAY_8PM = CURRENT_TIME_IST.replace(
 
 def parse_date_to_iso(date_str: str) -> str:
     """
-    Adjust the format string to match '15 Sep 2024 23:59 IST'
+    Adjust the format string to match '15 Sep 2024 23:59'
     """
     try:
-        date_object = datetime.strptime(date_str, "%d %b %Y %H:%M %Z")
+        # Check if [date_str] contains "IST" and remove it
+        date_str = date_str.replace("IST", "").strip()
+
+        date_object = datetime.strptime(date_str, "%d %b %Y %H:%M")
 
         date_with_timezone = IST.localize(date_object)
 
