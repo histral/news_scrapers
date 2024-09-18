@@ -1,11 +1,12 @@
-from datetime import datetime, timedelta
-import logging as Logger
 import pytz
-from core.scrapper import fetch_soup
-from core.firebase import post_news, Category, OutletCode
-from core.summery import extractive_summary
-from core.encode import compress_string
-from core.types import NewsArticle
+import logging as Logger
+
+from datetime import datetime, timedelta
+from histral_core.types import NewsArticle
+from histral_core.scraper import fetch_soup
+from histral_core.encode import encode_text
+from histral_core.summery import extractive_summary
+from histral_core.firebase import post_news_list, Category, OutletCode
 
 
 # --------------------- Logging Setup ---------------------
@@ -179,7 +180,7 @@ try:
             body_text = " ".join(body_content)
 
             summarized_body = extractive_summary(body_text, percentage=0.25)
-            summarized_body = compress_string(summarized_body)
+            summarized_body = encode_text(summarized_body)
             summarized_sub_heading = extractive_summary(news_subHeading, percentage=0.8)
 
             news = NewsArticle(
@@ -202,7 +203,7 @@ try:
 
     # --------------------- Save Data ---------------------
 
-    post_news(
+    post_news_list(
         DATA=news_objects,
         current_date=CURRENT_TIME_IST.date(),
         category=Category.USA,

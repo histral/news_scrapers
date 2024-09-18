@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 import logging as Logger
 import pytz
-from core.scrapper import fetch_soup
-from core.firebase import post_news, Category, OutletCode
-from core.summery import extractive_summary
-from core.encode import compress_string
-from core.types import NewsArticle
+from histral_core.scraper import fetch_soup
+from histral_core.firebase import post_news_list, Category, OutletCode
+from histral_core.summery import extractive_summary
+from histral_core.encode import encode_text
+from histral_core.types import NewsArticle
 
 
 # --------------------- Logging Setup ---------------------
@@ -158,7 +158,7 @@ try:
             # News Body
             content = " ".join(body_content)
             news_body = extractive_summary(content, percentage=0.6)
-            encoded_news_body = compress_string(news_body)
+            encoded_news_body = encode_text(news_body)
 
             news = NewsArticle(
                 tags=tags,
@@ -178,7 +178,7 @@ try:
 
     Logger.info(f"INFO: Fetched *{len(news_objects)} news* articles from ISN")
 
-    post_news(
+    post_news_list(
         DATA=news_objects,
         current_date=CURRENT_TIME_IST.date(),
         category=Category.BUSINESS,
