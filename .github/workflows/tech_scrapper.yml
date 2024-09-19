@@ -3,8 +3,8 @@ name: Scrape News for Tech
 on:
   workflow_dispatch: 
   schedule:
-    # Triggers daily at 8:19 PM IST
-    - cron: "49 14 * * *" 
+    # Triggers daily at 8:15 PM IST
+    - cron: "45 14 * * *" 
 
 jobs:
   scrape-news-for-tech:

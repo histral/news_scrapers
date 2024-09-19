@@ -3,8 +3,8 @@ name: Scrape News for Business
 on:
   workflow_dispatch: 
   schedule:
-    # Triggers daily at 8:17 PM IST
-    - cron: "47 14 * * *" 
+    # Triggers daily at 8:15 PM IST
+    - cron: "45 14 * * *" 
 
 jobs:
   scrape-news-for-business:
